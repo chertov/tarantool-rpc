@@ -1,0 +1,9 @@
+# ignore all
+*
+!*/
+
+# except
+!/traits.yaml
+!/simple.rs
+
+!/.gitignore
