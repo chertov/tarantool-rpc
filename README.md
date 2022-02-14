@@ -1,1 +1,1 @@
-![](/docs/img.png)
+![](/docs/sketch.png)
