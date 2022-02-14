@@ -3,7 +3,7 @@
 !*/
 
 # except
-!/traits.yaml
-!/simple.rs
+!/**/*.png
+!/**/*.md
 
 !/.gitignore
