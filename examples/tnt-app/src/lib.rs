@@ -2,7 +2,12 @@
 
 static TOKIO_RUNTIME: once_cell::sync::Lazy<parking_lot::RwLock<tokio::runtime::Runtime>> = once_cell::sync::Lazy::new(|| {
     debug!("tokio runtime created in thread_id {:?}", std::thread::current().id());
-    parking_lot::RwLock::new(tokio::runtime::Runtime::new().unwrap())
+
+    let rt = tokio::runtime::Builder::new_current_thread()
+    // let rt = tokio::runtime::Builder::new_multi_thread().max_blocking_threads(8).worker_threads(8)
+
+        .enable_time().build().unwrap();
+    parking_lot::RwLock::new(rt)
 });
 
 #[derive(Clone)]
@@ -39,9 +44,6 @@ impl my_simple_rpc::UsersTntImpl for DbImpl {
         Ok(())
     }
     fn get_value_from_space(&self, space: String, key: usize) -> Result<Option<my_custom_package::Row>, anyhow::Error> {
-        if key == 0 {
-            debug!("tnt thread_id {:?}", std::thread::current().id());
-        }
         let mut space = tarantool::space::Space::find(&space).ok_or(anyhow::anyhow!("Can't find space {space}"))?;
         Ok(match space.get(&(key,))? {
             Some(tuple) => Some(tuple.into_struct::<my_custom_package::Row>()?),
@@ -59,14 +61,18 @@ impl my_simple_rpc::AppsTntImpl for DbImpl {
     }
 }
 
-
-
-
 #[no_mangle]
 pub extern "C" fn start_service(_: tarantool::tuple::FunctionCtx, _: tarantool::tuple::FunctionArgs) -> std::os::raw::c_int {
     env_logger::builder().filter_level(log::LevelFilter::Trace).init();
+    debug!("tnt thread_id {:?}", std::thread::current().id());
     my_simple_rpc::start(Box::new(DbImpl {})).unwrap();
-    TOKIO_RUNTIME.read().spawn(service_main());
+
+    std::thread::spawn(|| {
+        let val = TOKIO_RUNTIME.read().block_on(async {
+            if let Err(err) = service_main().await { error!("service_main err: {:?}", err); };
+        });
+    });
+
     0
 }
 
@@ -74,7 +80,7 @@ pub extern "C" fn start_service(_: tarantool::tuple::FunctionCtx, _: tarantool::
 struct DB{}
 my_simple_rpc::tnt_full!(DB);
 
-async fn test(space: &str, test_id: usize, empty: bool) -> f64 {
+async fn test(space: &str, test_id: usize, empty: bool) -> u64 {
     use my_simple_rpc::Users;
 
     let db = DB{};
@@ -96,11 +102,12 @@ async fn test(space: &str, test_id: usize, empty: bool) -> f64 {
     }
     let seconds = now.elapsed().as_millis() as f64 / 1000.0;
     let rps = counter as f64 / seconds;
-    debug!("[test_{test_id}] rps: {rps}, calls: {counter}, elapsed: {seconds}s, threads: {:?}", threads);
-    rps
+    debug!("[test_{test_id}] rps: {rps}, calls: {counter}, elapsed: {seconds}s, runtime threads: {:?}", threads);
+    rps as u64
 }
 
 async fn service_main() -> Result<(), anyhow::Error> {
+    debug!("service_main start");
     use my_simple_rpc::Users;
 
     // call Tarantool methods from tokio threads
@@ -109,20 +116,17 @@ async fn service_main() -> Result<(), anyhow::Error> {
     let space = "test_space".to_string();
     db.create_space_and_fill_random(space.clone()).await.unwrap();
 
-    // show tatantool thread id
-    db.get_value_from_space(space.to_string(), 0).await.unwrap();
-
     // benchmark with empty function
     let tasks : Vec<_> = (0..10).map(|i| test(&space, i, true)).collect();
     let rps = futures::future::join_all(tasks).await;
-    let rps = rps.iter().sum::<f64>();
-    debug!("empty function rps: {rps}");
+    let rps = rps.iter().sum::<u64>();
+    debug!("benchmark empty rps: {rps}");
 
     // benchmark with get_value_from_space function
     let tasks : Vec<_> = (0..10).map(|i| test(&space, i, false)).collect();
     let rps = futures::future::join_all(tasks).await;
-    let rps = rps.iter().sum::<f64>();
-    debug!("non empty rps: {rps}");
+    let rps = rps.iter().sum::<u64>();
+    debug!("benchmark get_value_from_space rps: {rps}");
 
     loop {
         let res = db.get_user_by_email("chertovmv@gmail.com".to_string()).await;
