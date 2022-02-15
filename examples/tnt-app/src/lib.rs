@@ -1,3 +1,4 @@
+#![feature(thread_id_value)]
 #[macro_use] extern crate log;
 
 static TOKIO_RUNTIME: once_cell::sync::Lazy<parking_lot::RwLock<tokio::runtime::Runtime>> = once_cell::sync::Lazy::new(|| {
