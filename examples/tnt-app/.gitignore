@@ -1,0 +1,12 @@
+# ignore all
+*
+!*/
+
+# except
+!/src/lib.rs
+!/build.rs
+!/Cargo.toml
+!/app.lua
+!/run.sh
+
+!/**/.gitignore

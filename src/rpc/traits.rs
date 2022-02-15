@@ -135,7 +135,7 @@ impl Traits {
         src += &format!("macro_rules! tnt {{\n");
         src += &format!("    ($l:tt) => {{\n");
         for (_, trait_) in &self.traits {
-            src += &format!("        impl {crate_name}::impls::{} for $l {{}};\n", trait_.trait_name());
+            src += &format!("        impl {crate_name}::impls::{} for $l {{}}\n", trait_.trait_name());
         }
         src += &format!("    }}\n");
         src += &format!("}}\n");

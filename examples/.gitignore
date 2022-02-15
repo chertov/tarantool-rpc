@@ -6,4 +6,7 @@
 !/traits.yaml
 !/simple.rs
 
-!/.gitignore
+!/my-simple-rpc/src/**/*.rs
+!/my-simple-rpc/Cargo.toml
+
+!/**/.gitignore

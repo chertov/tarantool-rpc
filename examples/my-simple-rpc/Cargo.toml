@@ -1,0 +1,31 @@
+[package]
+name = "my-simple-rpc"
+version = "0.1.0"
+authors = ["Codegen TNT-RPC"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[features]
+tnt_impl = ["log", "parking_lot", "once_cell", "byteorder", "os_pipe", "futures", "tokio", "tarantool"]
+
+[dependencies]
+anyhow = "1"
+async-trait = "0.1"
+
+log = { version = "0.4", optional = true }
+parking_lot = { version = "0.11", optional = true }
+once_cell = { version = "1.8", optional = true }
+byteorder = { version = "1", optional = true }
+os_pipe = { version = "0.9", optional = true }
+futures = { version = "0.3", optional = true }
+tokio = { version = "1", features = ["time", "io-util"], optional = true }
+
+# override default tarantool package with value from tarantool_rpc::generate() function
+tarantool = { version = "0.5.1", optional = true }
+
+################################################
+### dependencies from YAML trait description ###
+################################################
+my-custom-package = { path = "../my-custom-package/" }

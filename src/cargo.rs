@@ -25,7 +25,7 @@ pub(crate) fn generate(output_path: &std::path::Path, crate_name: &str, traits: 
     src += &format!("byteorder = {{ version = \"1\", optional = true }}\n");
     src += &format!("os_pipe = {{ version = \"0.9\", optional = true }}\n");
     src += &format!("futures = {{ version = \"0.3\", optional = true }}\n");
-    src += &format!("tokio = {{ version = \"1\", features = [\"time\"], optional = true }}\n");
+    src += &format!("tokio = {{ version = \"1\", features = [\"time\", \"io-util\"], optional = true }}\n");
     src += &format!("\n");
 
     src += &match tarantool {

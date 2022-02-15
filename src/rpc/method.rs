@@ -2,10 +2,6 @@ use convert_case::{Case, Casing};
 
 use super::traits::Trait;
 
-pub enum Type {
-
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Param {
     pub name: String,
@@ -36,6 +32,7 @@ pub struct Method {
     #[serde(default = "Method::default_args")]
     #[serde(rename = "args")]
     args_v: Vec<Param>,
+
     #[serde(skip)]
     pub args: linked_hash_map::LinkedHashMap<String, Param>,
 
@@ -67,13 +64,6 @@ impl Method {
             rets.insert(ret.name.clone(), ret.validate()?);
         }
         self.rets = rets;
-
-        // let mut spaces = linked_hash_map::LinkedHashMap::new();
-        // for (name, mut space) in self.spaces.clone() {
-        //     spaces.insert(name.clone(), space.validate(name)?);
-        // }
-        // self.spaces = spaces;
-
         Ok(self)
     }
 
@@ -84,7 +74,6 @@ impl Method {
         for (name, arg) in &self.args {
             args.push(format!("{}: {}", name, arg.type_str))
         }
-
 
         let mut rets = vec![];
         for (name, ret) in &self.rets {

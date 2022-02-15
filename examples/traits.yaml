@@ -1,10 +1,10 @@
 
 # override the tarantool package to a custom version, git repository or path. Please set optional param to true!
-tarantool: '{ git = "https://github.com/chertov/tarantool-module.git", branch = "dev", features=["schema"], optional = true }'
+#tarantool: '{ git = "https://github.com/chertov/tarantool-module.git", branch = "dev", features=["schema"], optional = true }'
 
 # add your custom dependencies
 dependencies:
-  my_custom_package: '{ path = "/Users/user/dev/packages/my_custom_package/" }'
+  my-custom-package: '{ path = "../my-custom-package/" }'
 
 # tarantool RPC can implement different traits, please specify traits as yaml map with a trait name as a key
 traits:
@@ -13,46 +13,36 @@ traits:
     # specify the trait's methods as yaml map with a method name as a key
     methods:
       # method can contain arguments (args) and return values (rets)
-      email_get_pin:
+      create_user:
         args:
           # every method must have 'name' and 'type' fields
           # 'name' filed can be any valid Rust variable name.
           # 'type' filed can be any valid Rust type includes type from custom dependencies.
+          - { name: id, type: String }
+          - { name: name, type: String }
           - { name: email, type: String }
         # rets value will be Result<(), anyhow::Error> if rets array is empty,
         # Result<type0, anyhow::Error> if rets array contains only one element
         # or Result<(type0, type1, ..), anyhow::Error> when rets has more than one values
         rets:
-          - { name: pin, type: Option<u32> }
+          - { name: user, type: my_custom_package::User }
 
-      email_set_pin:
-        args:
-          - { name: email, type: String }
-          - { name: pin, type: u32 }
-      email_remove_pin:
-        args:
-          - { name: email, type: String }
-
-      create_user:
-        args:
-          - { name: user, type: my_custom_package::users::User }
-        rets:
-          - { name: user, type: my_custom_package::users::User }
-      get_user_by_user_id:
-        args:
-          - { name: user_id, type: String }
-        rets:
-          - { name: user, type: Option<my_custom_package::users::User> }
       get_user_by_email:
         args:
           - { name: email, type: String }
         rets:
-          - { name: user, type: Option<my_custom_package::users::User> }
-      get_user_by_login:
+          - { name: user, type: Option<my_custom_package::User> }
+
+
+      create_space_and_fill_random:
         args:
-          - { name: login, type: String }
+          - { name: space, type: String }
+      get_value_from_space:
+        args:
+          - { name: space, type: String }
+          - { name: key, type: usize }
         rets:
-          - { name: user, type: Option<my_custom_package::users::User> }
+          - { name: row, type: Option<my_custom_package::Row> }
 
   # another trait
   Apps:

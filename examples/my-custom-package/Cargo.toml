@@ -1,0 +1,15 @@
+[package]
+name = "my-custom-package"
+authors = ["Chertov Maxim"]
+repository = "https://github.com/chertov/tarantool-rpc"
+license = "MIT OR Apache-2.0"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+path = "lib.rs"
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+tarantool = { version = "0.5.1", features = ["schema"] }

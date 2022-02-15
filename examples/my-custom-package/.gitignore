@@ -1,0 +1,9 @@
+# ignore all
+*
+!*/
+
+# except
+!/lib.rs
+!/Cargo.toml
+
+!/**/.gitignore
