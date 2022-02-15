@@ -43,6 +43,9 @@ traits:
           - { name: key, type: usize }
         rets:
           - { name: row, type: Option<my_custom_package::Row> }
+      empty:
+        args: []
+        rets: []
 
   # another trait
   Apps:

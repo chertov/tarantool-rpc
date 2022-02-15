@@ -5,6 +5,7 @@ pub trait UsersTntImpl {
     fn get_user_by_email(&self, email: String) -> Result</* user */ Option<my_custom_package::User>, anyhow::Error>;
     fn create_space_and_fill_random(&self, space: String) -> Result<(), anyhow::Error>;
     fn get_value_from_space(&self, space: String, key: usize) -> Result</* row */ Option<my_custom_package::Row>, anyhow::Error>;
+    fn empty(&self) -> Result<(), anyhow::Error>;
 }
 pub trait AppsTntImpl {
     fn apps__create(&self, user_id: String, pub_key: String, device_name: String) -> Result<(), anyhow::Error>;

@@ -43,6 +43,15 @@ pub trait Users {
         TarantoolMessage::Users(UsersEnum::GetValueFromSpace {space, key, res}).send_to_coio()?;
         tokio::time::timeout(timeout, rx).await??
     }
+    async fn empty(&self) -> Result<(), anyhow::Error> { self.empty__with_custom_timeout(TIMEOUT).await }
+    #[cfg(not(feature="tnt_impl"))]
+    async fn empty__with_custom_timeout(&self, timeout: std::time::Duration) -> Result<(), anyhow::Error>;
+    #[cfg(feature="tnt_impl")]
+    async fn empty__with_custom_timeout(&self, timeout: std::time::Duration) -> Result<(), anyhow::Error> {
+        let (res, rx) = futures::channel::oneshot::channel();
+        TarantoolMessage::Users(UsersEnum::Empty {res}).send_to_coio()?;
+        tokio::time::timeout(timeout, rx).await??
+    }
 }
 
 #[async_trait::async_trait]

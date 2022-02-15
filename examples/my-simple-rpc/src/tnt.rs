@@ -49,6 +49,9 @@ pub(crate) enum UsersEnum {
         key: usize,
         res: futures::channel::oneshot::Sender<Result</* row */ Option<my_custom_package::Row>, anyhow::Error>>
     },
+    Empty {
+        res: futures::channel::oneshot::Sender<Result<(), anyhow::Error>>
+    },
 }
 impl UsersEnum {
     pub(crate) fn call(self) -> Result<(), anyhow::Error> {
@@ -79,6 +82,14 @@ impl UsersEnum {
             },
             Self::GetValueFromSpace { space, key, res } => {
                 let catch_res = std::panic::catch_unwind(|| { UsersTntImpl::get_value_from_space(&*instance(), space, key) });
+                let call_res = match catch_res {
+                    Ok(call_res) => call_res,
+                    Err(err) => Err(anyhow::anyhow!("panic err: {:?}", err)),
+                };
+                res.send(call_res).map_err(|send_value| anyhow::anyhow!("Can't send res.send"))
+            },
+            Self::Empty { res } => {
+                let catch_res = std::panic::catch_unwind(|| { UsersTntImpl::empty(&*instance(), ) });
                 let call_res = match catch_res {
                     Ok(call_res) => call_res,
                     Err(err) => Err(anyhow::anyhow!("panic err: {:?}", err)),
